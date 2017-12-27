@@ -126,12 +126,6 @@ public class CoxcombChart extends Region {
     @Override protected double computeMaxWidth(final double HEIGHT) { return MAXIMUM_WIDTH; }
     @Override protected double computeMaxHeight(final double WIDTH) { return MAXIMUM_HEIGHT; }
 
-    private void handleControlPropertyChanged(final String PROPERTY) {
-        if ("".equals(PROPERTY)) {
-
-        }
-    }
-
     @Override public ObservableList<Node> getChildren() { return super.getChildren(); }
 
     public List<Item> getItems() { return items; }
@@ -223,7 +217,7 @@ public class CoxcombChart extends Region {
             ctx.setLineWidth(barWidth);
             ctx.setStroke(item.getColor());
             ctx.strokeArc(xy, xy, wh, wh, startAngle, angle, ArcType.OPEN);
-            if (i != (noOfItems-1)) {
+            if (i != (noOfItems-1) && angle > 5) {
                 x1 = center + radius * Math.cos(Math.toRadians(endAngle));
                 y1 = center - radius * Math.sin(Math.toRadians(endAngle));
                 x2 = x1 + 20 * Math.cos(Math.toRadians(endAngle - 90));
