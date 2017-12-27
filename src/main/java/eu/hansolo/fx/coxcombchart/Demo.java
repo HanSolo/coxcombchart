@@ -37,12 +37,12 @@ public class Demo extends Application {
 
     @Override public void init() {
         Item[] items = {
-            new Item(27, "", Color.web("#96AA3B")),
-            new Item(24, "", Color.web("#29A783")),
-            new Item(16, "", Color.web("#098AA9")),
-            new Item(15, "", Color.web("#62386F")),
-            new Item(13, "", Color.web("#89447B")),
-            new Item(5, "", Color.web("#EF5780"))
+            new Item(27, Color.web("#96AA3B")),
+            new Item(24, Color.web("#29A783")),
+            new Item(16, Color.web("#098AA9")),
+            new Item(15, Color.web("#62386F")),
+            new Item(13, Color.web("#89447B")),
+            new Item(5, Color.web("#EF5780"))
         };
         CoxcombChart chart = new CoxcombChart(items);
     }
