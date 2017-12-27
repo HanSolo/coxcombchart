@@ -36,21 +36,15 @@ public class Demo extends Application {
     private CoxcombChart chart;
 
     @Override public void init() {
-        Item       item1 = new Item(27, "", Color.web("#96AA3B"));
-        Item       item2 = new Item(24, "", Color.web("#29A783"));
-        Item       item3 = new Item(16, "", Color.web("#098AA9"));
-        Item       item4 = new Item(15, "", Color.web("#62386F"));
-        Item       item5 = new Item(13, "", Color.web("#89447B"));
-        Item       item6 = new Item(5, "", Color.web("#EF5780"));
-        List<Item> items = new ArrayList<>();
-        items.add(item1);
-        items.add(item2);
-        items.add(item3);
-        items.add(item4);
-        items.add(item5);
-        items.add(item6);
-
-        chart = new CoxcombChart(items);
+        Item[] items = {
+            new Item(27, "", Color.web("#96AA3B")),
+            new Item(24, "", Color.web("#29A783")),
+            new Item(16, "", Color.web("#098AA9")),
+            new Item(15, "", Color.web("#62386F")),
+            new Item(13, "", Color.web("#89447B")),
+            new Item(5, "", Color.web("#EF5780"))
+        };
+        CoxcombChart chart = new CoxcombChart(items);
     }
 
     @Override public void start(Stage stage) {

@@ -38,6 +38,9 @@ public class Item {
     public Item() {
         this(0, "", Color.RED);
     }
+    public Item(final double VALUE, final Color COLOR) {
+        this(VALUE, "", COLOR);
+    }
     public Item(final double VALUE, final String NAME) {
         this(VALUE, NAME, Color.RED);
     }
