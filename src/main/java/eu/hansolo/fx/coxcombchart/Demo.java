@@ -44,7 +44,9 @@ public class Demo extends Application {
             new Item(13, Color.web("#89447B")),
             new Item(5, Color.web("#EF5780"))
         };
-        CoxcombChart chart = new CoxcombChart(items);
+        chart = new CoxcombChart(items);
+        chart.setTextColor(Color.WHITE);
+        chart.setAutoTextColor(false);
     }
 
     @Override public void start(Stage stage) {

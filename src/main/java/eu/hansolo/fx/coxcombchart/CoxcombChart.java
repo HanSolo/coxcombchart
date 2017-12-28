@@ -17,6 +17,10 @@
 package eu.hansolo.fx.coxcombchart;
 
 import javafx.beans.DefaultProperty;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.BooleanPropertyBase;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ObjectPropertyBase;
 import javafx.collections.ObservableList;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -50,19 +54,23 @@ import java.util.Locale;
  */
 @DefaultProperty("children")
 public class CoxcombChart extends Region {
-    private static final double           PREFERRED_WIDTH  = 250;
-    private static final double           PREFERRED_HEIGHT = 250;
-    private static final double           MINIMUM_WIDTH    = 50;
-    private static final double           MINIMUM_HEIGHT   = 50;
-    private static final double           MAXIMUM_WIDTH    = 1024;
-    private static final double           MAXIMUM_HEIGHT   = 1024;
-    private              double           size;
-    private              double           width;
-    private              double           height;
-    private              Canvas           canvas;
-    private              GraphicsContext  ctx;
-    private              Pane             pane;
-    private              LinkedList<Item> items;
+    private static final double                PREFERRED_WIDTH  = 250;
+    private static final double                PREFERRED_HEIGHT = 250;
+    private static final double                MINIMUM_WIDTH    = 50;
+    private static final double                MINIMUM_HEIGHT   = 50;
+    private static final double                MAXIMUM_WIDTH    = 1024;
+    private static final double                MAXIMUM_HEIGHT   = 1024;
+    private              double                size;
+    private              double                width;
+    private              double                height;
+    private              Canvas                canvas;
+    private              GraphicsContext       ctx;
+    private              Pane                  pane;
+    private              LinkedList<Item>      items;
+    private              Color                 _textColor;
+    private              ObjectProperty<Color> textColor;
+    private              boolean               _autoTextColor;
+    private              BooleanProperty       autoTextColor;
 
 
     // ******************** Constructors **************************************
@@ -74,10 +82,12 @@ public class CoxcombChart extends Region {
     }
     public CoxcombChart(final List<Item> ITEMS) {
         getStylesheets().add(CoxcombChart.class.getResource("coxcomb-chart.css").toExternalForm());
-        width  = PREFERRED_WIDTH;
-        height = PREFERRED_HEIGHT;
-        size   = PREFERRED_WIDTH;
-        items  = new LinkedList<>(ITEMS);
+        width          = PREFERRED_WIDTH;
+        height         = PREFERRED_HEIGHT;
+        size           = PREFERRED_WIDTH;
+        items          = new LinkedList<>(ITEMS);
+        _textColor     = Color.WHITE;
+        _autoTextColor = true;
         initGraphics();
         registerListeners();
     }
@@ -173,6 +183,46 @@ public class CoxcombChart extends Region {
 
     public double sumOfAllItems() { return items.stream().mapToDouble(Item::getValue).sum(); }
 
+    public Color getTextColor() { return null == textColor ? _textColor : textColor.get(); }
+    public void setTextColor(final Color COLOR) {
+        if (null == textColor) {
+            _textColor = COLOR;
+            redraw();
+        } else {
+            textColor.set(COLOR);
+        }
+    }
+    public ObjectProperty<Color> textColorProperty() {
+        if (null == textColor) {
+            textColor = new ObjectPropertyBase<Color>(_textColor) {
+                @Override protected void invalidated() { redraw(); }
+                @Override public Object getBean() { return CoxcombChart.this; }
+                @Override public String getName() { return "textColor"; }
+            };
+            _textColor = null;
+        }
+        return textColor;
+    }
+
+    public boolean isAutoTextColor() { return null == autoTextColor ? _autoTextColor : autoTextColor.get(); }
+    public void setAutoTextColor(final boolean AUTO) {
+        if (null == autoTextColor) {
+            _autoTextColor = AUTO;
+            redraw();
+        } else {
+            autoTextColor.set(AUTO);
+        }
+    }
+    public BooleanProperty autoTextColorProperty() {
+        if (null == autoTextColor) {
+            autoTextColor = new BooleanPropertyBase(_autoTextColor) {
+                @Override protected void invalidated() { redraw(); }
+                @Override public Object getBean() { return CoxcombChart.this; }
+                @Override public String getName() { return "autoTextColor"; }
+            };
+        }
+        return autoTextColor;
+    }
 
     private void drawChart() {
         int          noOfItems   = items.size();
@@ -187,7 +237,8 @@ public class CoxcombChart extends Region {
         double       maxWH       = size * 0.64;
         double       wh          = minWH;
         double       whStep      = (maxWH - minWH) / noOfItems;
-        Color        textColor   = Color.WHITE;
+        Color        textColor   = getTextColor();
+        boolean      isAutoColor = isAutoTextColor();
         GaussianBlur blur        = new GaussianBlur();
         blur.setRadius(3);
         double       x1, y1;
@@ -197,7 +248,6 @@ public class CoxcombChart extends Region {
         double       radius;
 
         ctx.clearRect(0, 0, size, size);
-        ctx.setFill(textColor);
         ctx.setFont(Font.font(size * 0.035));
         for (int i = 0 ; i < noOfItems ; i++) {
             Item   item  = items.get(i);
@@ -250,7 +300,11 @@ public class CoxcombChart extends Region {
             if (angle > 8) {
                 tx = center + radius * Math.cos(Math.toRadians(endAngle - angle * 0.5));
                 ty = center - radius * Math.sin(Math.toRadians(endAngle - angle * 0.5));
-                ctx.setFill(textColor);
+                if (isAutoColor) {
+                    ctx.setFill(Helper.isDark(item.getColor()) ? Color.WHITE : Color.BLACK);
+                } else {
+                    ctx.setFill(textColor);
+                }
                 ctx.fillText(String.format(Locale.US, "%.0f%%", (value / sum * 100.0)), tx, ty, barWidth);
             }
         }
