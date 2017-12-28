@@ -246,7 +246,7 @@ public class CoxcombChart extends Region {
         double       clippingRadius;
 
         ctx.clearRect(0, 0, size, size);
-        ctx.setFont(Font.font(size * 0.035));
+        ctx.setFont(Font.font(size * 0.03));
         for (int i = 0 ; i < noOfItems ; i++) {
             Item   item  = items.get(i);
             double value = item.getValue();
