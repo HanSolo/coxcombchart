@@ -26,13 +26,11 @@ import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.effect.GaussianBlur;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
 import javafx.scene.shape.ArcType;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.text.Font;
@@ -239,13 +237,13 @@ public class CoxcombChart extends Region {
         double       whStep      = (maxWH - minWH) / noOfItems;
         Color        textColor   = getTextColor();
         boolean      isAutoColor = isAutoTextColor();
-        GaussianBlur blur        = new GaussianBlur();
-        blur.setRadius(3);
-        double       x1, y1;
-        double       x2, y2;
+        DropShadow   shadow      = new DropShadow(BlurType.GAUSSIAN, Color.rgb(0, 0, 0, 0.75), size * 0.02, 0, 0, 0);
+        double       spread      = size * 0.005;
+        double       x, y;
         double       tx, ty;
         double       endAngle;
         double       radius;
+        double       clippingRadius;
 
         ctx.clearRect(0, 0, size, size);
         ctx.setFont(Font.font(size * 0.035));
@@ -258,42 +256,45 @@ public class CoxcombChart extends Region {
             wh         += whStep;
             barWidth   += whStep;
 
-            angle    = value * stepSize;
-            endAngle = startAngle + angle;
-            radius   = wh * 0.5;
+            angle          = value * stepSize;
+            endAngle       = startAngle + angle;
+            radius         = wh * 0.5;
+            clippingRadius = radius + barWidth * 0.5;
 
-            // Segment
+            // Set Segment Clipping
             ctx.save();
-            ctx.setLineWidth(barWidth);
-            ctx.setStroke(item.getColor());
-            ctx.strokeArc(xy, xy, wh, wh, startAngle, angle, ArcType.OPEN);
-            if (i != (noOfItems-1) && angle > 5) {
-                x1 = center + radius * Math.cos(Math.toRadians(endAngle));
-                y1 = center - radius * Math.sin(Math.toRadians(endAngle));
-                x2 = x1 + 20 * Math.cos(Math.toRadians(endAngle - 90));
-                y2 = y1 - 20 * Math.sin(Math.toRadians(endAngle - 90));
-                ctx.setEffect(blur);
-                ctx.setStroke(new LinearGradient(x1, y1, x2, y2, false, CycleMethod.NO_CYCLE,
-                                                 new Stop(0.00, Color.rgb(0, 0, 0, 0.55)),
-                                                 new Stop(0.01, Color.rgb(0, 0, 0, 0.25)),
-                                                 new Stop(0.25, Color.rgb(0, 0, 0, 0.08)),
-                                                 new Stop(0.75, Color.rgb(0, 0, 0, 0.01)),
-                                                 new Stop(1.00, Color.rgb(0, 0, 0, 0))));
-                ctx.strokeArc(xy, xy, wh, wh, endAngle, -5, ArcType.OPEN);
-                if (i == 0) {
-                    x1 = center + radius * Math.cos(Math.toRadians(startAngle));
-                    y1 = center - radius * Math.sin(Math.toRadians(startAngle));
-                    x2 = x1 - 20 * Math.cos(Math.toRadians(startAngle - 90));
-                    y2 = y1 + 20 * Math.sin(Math.toRadians(startAngle - 90));
-                    ctx.setStroke(new LinearGradient(x1, y1, x2, y2, false, CycleMethod.NO_CYCLE,
-                                                     new Stop(0.00, Color.rgb(0, 0, 0, 0.55)),
-                                                     new Stop(0.01, Color.rgb(0, 0, 0, 0.25)),
-                                                     new Stop(0.25, Color.rgb(0, 0, 0, 0.08)),
-                                                     new Stop(0.75, Color.rgb(0, 0, 0, 0.01)),
-                                                     new Stop(1.00, Color.rgb(0, 0, 0, 0))));
-                    ctx.strokeArc(xy, xy, wh, wh, startAngle, 5, ArcType.OPEN);
-                }
-            }
+                ctx.beginPath();
+                ctx.arc(center, center, clippingRadius, clippingRadius, 0, 360);
+                ctx.clip();
+
+                // Segment
+                ctx.save();
+                    // Draw segment
+                    ctx.setLineWidth(barWidth);
+                    ctx.setStroke(item.getColor());
+                    ctx.strokeArc(xy, xy, wh, wh, startAngle, angle, ArcType.OPEN);
+                    // Add shadow effect to segment
+                    if (i != (noOfItems-1) && angle > 2) {
+                        x = Math.cos(Math.toRadians(endAngle - 5));
+                        y = -Math.sin(Math.toRadians(endAngle - 5));
+                        shadow.setOffsetX(x * spread);
+                        shadow.setOffsetY(y * spread);
+                        ctx.save();
+                            ctx.setEffect(shadow);
+                            ctx.strokeArc(xy, xy, wh, wh, endAngle, 2, ArcType.OPEN);
+                        ctx.restore();
+                        if (i == 0) {
+                            x = Math.cos(Math.toRadians(startAngle + 5));
+                            y = -Math.sin(Math.toRadians(startAngle + 5));
+                            shadow.setOffsetX(x * spread);
+                            shadow.setOffsetY(y * spread);
+                            ctx.setEffect(shadow);
+                            ctx.strokeArc(xy, xy, wh, wh, startAngle, -2, ArcType.OPEN);
+                        }
+                    }
+                ctx.restore();
+
+            // Remove Segment Clipping
             ctx.restore();
 
             // Percentage
